@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>روبوت الرياضيات</title>
+<style>
+:root{--bg:#f4f6fb;--card:#fff;--tx:#1d2433;--mu:#6b7385;--ac:#4a7de8;--ln:#dfe4ef;--shell:#f7f8fc;--scr:#0f1424;--foot:#5b8def;--st:#e8eefc}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1220;--card:#181e33;--tx:#e8ecf7;--mu:#98a0b8;--ln:#2a3250;--shell:#d9deee;--st:#202845}}
+:root[data-theme="dark"]{--bg:#0e1220;--card:#181e33;--tx:#e8ecf7;--mu:#98a0b8;--ln:#2a3250;--shell:#d9deee;--st:#202845}
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:system-ui,-apple-system,"Segoe UI",Tahoma,sans-serif;display:flex;justify-content:center}
+.app{width:100%;max-width:520px;padding:14px;display:flex;flex-direction:column;gap:10px}
+h1{font-size:18px;margin:4px 0 0;color:var(--ac);text-align:center}
+.stage{display:flex;flex-direction:column;align-items:center;cursor:pointer;user-select:none}
+.ant{width:6px;height:16px;background:#9aa3b8;border-radius:3px;position:relative}
+.ant::after{content:"";position:absolute;top:-10px;right:-5px;width:16px;height:16px;border-radius:50%;background:#ffd23f}
+.head{width:200px;height:112px;background:var(--shell);border-radius:26px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px #0003;position:relative;transition:transform .5s ease}
+.head::before,.head::after{content:"";position:absolute;top:42px;width:10px;height:26px;border-radius:6px;background:var(--foot)}
+.head::before{right:-6px}.head::after{left:-6px}
+.eyes{width:168px;height:84px;background:var(--scr);border-radius:16px;overflow:hidden}
+.neck{width:34px;height:18px;background:#a9c4f5}
+.body{width:300px;background:var(--shell);border-radius:30px;padding:14px;box-shadow:0 4px 12px #0003}
+.screen{background:var(--scr);border-radius:14px;height:200px;overflow:auto;padding:12px;color:#e8f6ff;font-size:15px;line-height:1.7;white-space:pre-wrap}
+.screen.waves{padding:0;overflow:hidden}
+.feet{display:flex;gap:90px;margin-top:-2px}
+.feet i{display:block;width:62px;height:16px;border-radius:0 0 10px 10px;background:var(--foot)}
+.status{text-align:center;color:var(--mu);font-size:13px;min-height:18px}
+.row{display:flex;gap:8px}
+input{flex:1;min-width:0;padding:12px 14px;border:1px solid var(--ln);border-radius:14px;background:var(--card);color:var(--tx);font:inherit;font-size:16px}
+button{border:0;border-radius:14px;background:var(--ac);color:#fff;font:inherit;padding:0 16px;min-height:46px;cursor:pointer}
+button.alt{background:var(--st);color:var(--ac)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
+.chips button{min-height:34px;font-size:13px;padding:0 12px}
+.serial{direction:ltr;text-align:left;font:12px/1.5 ui-monospace,Menlo,monospace;background:var(--card);border:1px solid var(--ln);border-radius:10px;padding:8px 10px;color:var(--mu);min-height:62px}
+.serial b{color:var(--ac)}
+.screen{white-space:normal}
+.screen .gap{height:8px}
+.screen .mx{direction:ltr;text-align:left;unicode-bidi:isolate;white-space:pre;overflow-x:auto;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:14px;color:#9fe8ff;line-height:1.6}
+.screen .it{display:block;width:100%;text-align:right;background:#1c2744;color:#9fe8ff;margin:5px 0;min-height:40px;padding:6px 12px;border-radius:10px;font-size:14px}
+.screen .it:active{background:#2a3a66}
+.codecard{background:var(--card);border:1px solid var(--ln);border-radius:12px;padding:8px 10px;display:flex;flex-direction:column;gap:6px}
+.codecard .ch{display:flex;align-items:center;justify-content:space-between;gap:8px;color:var(--tx)}
+.codecard button{min-height:34px;font-size:13px}
+.codecard pre{direction:ltr;text-align:left;margin:0;max-height:150px;overflow:auto;font:11px/1.5 ui-monospace,Menlo,Consolas,monospace;color:var(--mu);background:var(--st);border-radius:8px;padding:8px;white-space:pre}
+.codecard small{color:var(--mu);font-size:12px}
+#dev{display:none;position:fixed;inset:0;background:#000a;z-index:50;align-items:center;justify-content:center;padding:max(10px,env(safe-area-inset-top,0px)) 10px max(10px,env(safe-area-inset-bottom,0px))}
+#dev.on{display:flex}
+.devbox{background:var(--card);color:var(--tx);border-radius:16px;padding:12px;width:100%;max-width:680px;max-height:100%;display:flex;flex-direction:column;gap:8px}
+.devbox .devh{display:flex;justify-content:space-between;align-items:center}
+.devbox button{min-height:40px}
+.devbox label{font-weight:bold;font-size:14px}
+.devbox small{color:var(--mu);font-size:12px;line-height:1.6}
+.devbox textarea{flex:1;min-height:38vh;direction:ltr;text-align:left;font:12px/1.5 ui-monospace,Menlo,Consolas,monospace;border:1px solid var(--ln);border-radius:10px;padding:8px;background:var(--st);color:var(--tx);resize:none;white-space:pre;overflow:auto}
+.devbox input{direction:ltr;text-align:left;font-size:14px;padding:8px 10px}
+#devmsg{font-size:13px;min-height:18px}
+</style>
+</head>
+<body>
+<div class="app">
+  <h1>🤖 روبوت الرياضيات</h1>
+  <div class="stage" id="stage">
+    <div class="ant"></div>
+    <div class="head" id="head"><svg class="eyes" id="eyes" viewBox="0 0 168 84"></svg></div>
+    <div class="neck"></div>
+    <div class="body"><div class="screen waves" id="screen"></div></div>
+    <div class="feet"><i></i><i></i></div>
+  </div>
+  <div class="status" id="status"></div>
+  <div class="chips" id="chips"></div>
+  <div class="row">
+    <input id="q" dir="auto" placeholder="اكتب هنا..." autocomplete="off">
+    <button id="go">اسأل</button>
+  </div>
+  <div class="serial" id="ser"></div>
+  <div class="codecard"><div class="ch"><b>💻 كود الروبوت</b><button id="devbtn">✏️ تعديل الكود</button></div>
+    <pre id="codeprev"></pre>
+    <small>🔌 مكان الـ API: داخل «تعديل الكود» في الخانة الأولى (أو في السطر BRAIN_URL بأول الكود).</small></div>
+</div>
+<div id="dev"><div class="devbox">
+  <div class="devh"><b>💻 تعديل كود الروبوت</b><button class="alt" id="devx">✕ إغلاق</button></div>
+  <label for="apiurl">🔌 رابط الـ API (ضع هنا عنوان السيرفر)</label>
+  <input id="apiurl" placeholder="http://192.168.1.10:5000/chat" autocomplete="off">
+  <label for="gkey">🔑 مفتاح Gemini API (اختياري)</label>
+  <input id="gkey" type="password" placeholder="AQ.xxxxxxxx..." autocomplete="off">
+  <label for="gmodel">🧠 الموديل</label>
+  <input id="gmodel" value="gemini-3.5-flash-lite" autocomplete="off">
+  <small>يُرسل الروبوت {text, state} بطريقة POST إلى هذا الرابط، ويجب أن يرجع {emotion, text, state}. قيم emotion: happy / think / sad / angry. اتركه فارغا ليعمل الروبوت بالكود الموجود في الأسفل. الربط يعمل عند فتح الملف على جهازك أو على Pi، ولا يعمل داخل المعاينة المنشورة.</small>
+  <textarea id="code" spellcheck="false"></textarea>
+  <div class="row"><button id="devsave">✅ حفظ وتحديث الروبوت</button><button class="alt" id="devreset">↺ الكود الأصلي</button></div>
+  <div id="devmsg"></div>
+</div></div>
+<script type="text/plain" id="brainCode">/* =====================================================
+   1) BRAIN — المخ. ما كيعرف والو على الشاشة ولا الـ HTML.
+   دخول: (نص، حالة)  خروج: {emotion, text}
+   باش تربط الموديل ديالك: حط عنوانو هنا (سيرفر على الـ Pi)
+   كيتبعت ليه {text, state} وكيرجع {emotion, text, state}
+   ===================================================== */
+const BRAIN_URL=""; // 🔌 هنا مكان رابط الـ API (أو اكتبه في الخانة أعلى لوحة التعديل)
+const N=s=>s.toLowerCase().replace(/[\u064B-\u0652]/g,"").replace(/[أإآ]/g,"ا").replace(/ى/g,"ي").replace(/ة/g,"ه").replace(/[٠-٩]/g,d=>"٠١٢٣٤٥٦٧٨٩".indexOf(d));
+const R=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+const pick=a=>a[R(0,a.length-1)];
+const gcd=(a,b)=>b?gcd(b,a%b):a;
+const fr=(n,d)=>{const g=Math.abs(gcd(n,d))||1;n/=g;d/=g;if(d<0){n=-n;d=-d}return d==1?""+n:n+"/"+d};
+const lin=s=>{let a=0,b=0;(s.replace(/\s/g,"").replace(/\*/g,"").replace(/,/g,".").match(/[+-]?(\d+\.?\d*)?x|[+-]?\d+\.?\d*/g)||[]).forEach(k=>{if(k.endsWith("x")){const c=k.slice(0,-1);a+=c==""||c=="+"?1:c=="-"?-1:+c}else b+=+k});return[a,b]};
+const norm=s=>{s=s.replace(/\s/g,"").replace(",",".");const m=s.match(/^(-?\d+)\/(\d+)$/);return m?fr(+m[1],+m[2]):""+Number(s)};
+const al=r=>{const w=Math.max(...r.map(x=>(""+x[0]).length));return r.map(x=>(""+x[0]).padEnd(w)+" = "+x[1]).join("\n")};
+const pa=n=>n<0?`(${n})`:n;
+const fl=(a,b)=>{let s=a?(a==1?"":a==-1?"-":a)+"x":"";if(b||!a)s+=(s?(b<0?" − ":" + "):(b<0?"−":""))+Math.abs(b);return s};
+const sup=n=>String(n).replace(/\d/g,d=>"⁰¹²³⁴⁵⁶⁷⁸⁹"[d]);
+const fz=n=>{const f=[];for(let q=2;q<=n;q++){let e=0;while(n%q==0){n/=q;e++}if(e)f.push([q,e])}return f};
+const fzs=n=>fz(n).map(([q,e])=>q+(e>1?sup(e):"")).join(" × ");
+const lcm=(a,b)=>a*b/gcd(a,b);
+const T={
+ frac:{n:"الكسور",k:["كسر","كسور","fraction"],
+  r:"الكسر a/b: b هو المقام و a هو البسط.\nباش نجمعو كسرين:\n1) كنوحدو المقام\n2) كنجمعو البسطين",
+  m:al([["1/2 + 1/3","3/6 + 2/6"],["","5/6"]]),
+  ex(){const b=pick([2,3,4,5,6]);let d;do d=pick([2,3,4,5,6]);while(d==b);const a=R(1,b-1),c=R(1,d-1),L=lcm(b,d),x=a*L/b,y=c*L/d,s=fr(x+y,L);
+   return{q:`احسب:\n${a}/${b} + ${c}/${d}`,h:[`كنوحدو المقام. المقام المشترك هو ${L}`,`كنحولو الكسرين:\n${al([[`${a}/${b}`,`${x}/${L}`],[`${c}/${d}`,`${y}/${L}`]])}\nدابا جمع البسطين`],
+   sol:`كنوحدو المقام (${L}) وكنجمعو البسطين:\n${al([[`${a}/${b} + ${c}/${d}`,`${x}/${L} + ${y}/${L}`],["",`${x+y}/${L}`],...(s!=`${x+y}/${L}`?[["",s]]:[])])}`,ans:s}}},
+ eq:{n:"المعادلات",k:["معادل","equation"],
+  r:"باش نحلو معادلة بحال 2x + 3 = 11:\n1) كنحيدو الرقم الحر من الجهتين\n2) كنقسمو على معامل x",
+  m:al([["2x + 3","11"],["2x","11 − 3"],["2x","8"],["x","8/2"],["x","4"]]),
+  ex(){const a=R(2,9),x=R(1,9),b=R(1,9),c=a*x+b;
+   const rows=[[`${a}x + ${b}`,`${c}`],[`${a}x`,`${c} − ${b}`],[`${a}x`,`${c-b}`]],all=rows.concat([["x",`${c-b}/${a}`],["x",`${x}`]]);
+   return{q:`حل المعادلة:\n${a}x + ${b} = ${c}`,h:[`كنحيدو ${b} من الجهتين:\n${al(rows)}`,`دابا كنقسمو على ${a}:\n${al(all)}`],sol:`كنحيدو ${b} من الجهتين وكنقسمو على ${a}:\n${al(all)}`,ans:""+x}}},
+ pyth:{n:"فيثاغورس",k:["فيثاغورس","فيتاغورس","فيثاغور","pythagore"],
+  r:"فالمثلث القائم الزاوية:\nالوتر² = ضلع² + ضلع²",
+  m:"ضلعين 3 و 4:\n"+al([["c²","3² + 4²"],["","9 + 16"],["","25"],["c","√25"],["","5"]]),
+  ex(){const t=pick([[3,4,5],[5,12,13],[6,8,10],[8,15,17]]),k=R(1,2),[a,b,c]=t.map(v=>v*k),s=a*a+b*b,rows=[["c²",`${a}² + ${b}²`],["",`${a*a} + ${b*b}`],["",`${s}`]];
+   return{q:`مثلث قائم الزاوية، ضلعاه ${a} و ${b}. شحال هو الوتر c؟`,h:[`فيثاغورس:\nc² = ${a}² + ${b}²`,`${al(rows)}\nدابا دير الجذر المربع`],sol:`كنطبقو فيثاغورس:\n${al(rows.concat([["c",`√${s}`],["",`${c}`]]))}`,ans:""+c}}},
+ pct:{n:"النسبة المئوية",k:["مئويه","نسبه","pourcentage"],
+  r:"p% من n:\nكنضربو n فـ p وكنقسمو على 100",
+  m:al([["20% × 50","50 × 20 ÷ 100"],["","1000 ÷ 100"],["","10"]]),
+  ex(){const q=pick([10,20,25,50]),n=pick([40,60,80,120,200]),v=n*q/100,rows=[[`${q}% × ${n}`,`${n} × ${q} ÷ 100`],["",`${n*q} ÷ 100`],["",`${v}`]];
+   return{q:`شحال هو ${q}% من ${n}؟`,h:[`${q}% معناها ${q}/100`,`${al(rows.slice(0,2))}\nدابا قسم على 100`],sol:al(rows),ans:""+v}}},
+ sqrt:{n:"الجذور المربعة",k:["جذر","جدر","جذور","جدور","racine"],
+  r:"√a هو العدد الموجب لي مربعو كيساوي a.\n√(a×b) = √a × √b",
+  m:al([["√49","√(7 × 7)"],["","7"]]),
+  ex(){const a=R(2,15);return{q:`شحال هو √${a*a}؟`,h:[`قلب على عدد إلا ضربتو فراسو كيعطي ${a*a}`,`جرب بين ${a-1} و ${a+1}`],sol:al([[`√${a*a}`,`√(${a} × ${a})`],["",`${a}`]]),ans:""+a}}},
+ pow:{n:"القوى",k:["قوه","قوي","puissance"],
+  r:"aⁿ = a × a × ... × a (n مرة)\na^m × a^n = a^(m+n)\na⁰ = 1",
+  m:al([["2³","2 × 2 × 2"],["","8"]]),
+  ex(){const a=R(2,5),n=R(2,4),w=Array(n).fill(a).join(" × ");return{q:`احسب ${a}^${n}`,h:[`ضرب ${a} فراسو ${n} مرات`,w],sol:al([[`${a}^${n}`,w],["",`${a**n}`]]),ans:""+a**n}}},
+ area:{n:"المساحة والمحيط",k:["مساحه","محيط","aire","perimetre"],
+  r:"مستطيل: S = الطول × العرض ، P = 2 × (الطول + العرض)\nمثلث: S = القاعدة × الارتفاع ÷ 2\nدائرة: P = 2πr ، S = πr²",
+  m:"مستطيل 5 و 3:\n"+al([["S","5 × 3"],["","15"],["P","2 × (5 + 3)"],["","16"]]),
+  ex(){const a=R(3,12),b=R(2,9);return{q:`شحال هي مساحة مستطيل طولو ${a} وعرضو ${b}؟`,h:["المساحة = الطول × العرض",`${a} × ${b}`],sol:al([["S",`${a} × ${b}`],["",`${a*b}`]]),ans:""+a*b}}},
+ prop:{n:"التناسبية",k:["تناسب"],
+  r:"إلا كانو عددين متناسبين كنستعملو الجداء بالتقاطع:\na/b = c/d ⟹ a × d = b × c",
+  m:"3 كيلو بـ 12 درهم. شحال 5 كيلو؟\n"+al([["12 ÷ 3","4"],["4 × 5","20"]]),
+  ex(){const k=R(2,5),a=R(2,5),b=a+R(1,4),q=a*k;return{q:`${a} كيلو بـ ${q} درهم. شحال ${b} كيلو؟`,h:[`شحال كيساوي الكيلو الواحد؟ قسم ${q} على ${a}`,`الكيلو = ${k}. دابا ضرب فـ ${b}`],sol:al([[`${q} ÷ ${a}`,`${k}`],[`${k} × ${b}`,`${k*b}`]]),ans:""+k*b}}},
+ mean:{n:"الإحصاء (المعدل)",k:["احصاء","معدل","متوسط","moyenne"],
+  r:"المعدل = مجموع القيم ÷ عددها",
+  m:al([["m","(4 + 6 + 8) ÷ 3"],["","18 ÷ 3"],["","6"]]),
+  ex(){const m=R(5,15),d=R(1,4);return{q:`احسب معدل: ${m-d} و ${m} و ${m+d}`,h:["جمع القيم","قسم المجموع على 3"],sol:al([["m",`(${m-d} + ${m} + ${m+d}) ÷ 3`],["",`${3*m} ÷ 3`],["",`${m}`]]),ans:""+m}}},
+ ppcm:{n:"PGCD و PPCM",k:["ppcm","pgcd","قاسم","مضاعف"],
+  r:"PGCD = أكبر قاسم مشترك\nPPCM = أصغر مضاعف مشترك\nكنفككو الأعداد لعوامل أولية:\n- PGCD: العوامل المشتركة بأصغر أس\n- PPCM: كاع العوامل بأكبر أس",
+  m:al([["12","2² × 3"],["18","2 × 3²"],["PGCD","2 × 3 = 6"],["PPCM","2² × 3² = 36"]]),
+  ex(){let a,b;do{a=R(4,40);b=R(4,40)}while(a==b||gcd(a,b)==1);const w=pick(["PGCD","PPCM"]),v=w=="PGCD"?gcd(a,b):lcm(a,b),f=al([[""+a,fzs(a)],[""+b,fzs(b)]]);
+   return{q:`احسب ${w}(${a}, ${b})`,h:[`فكك العددين لعوامل أولية:\n${f}`,w=="PGCD"?"PGCD: خد العوامل المشتركة بأصغر أس":"PPCM: خد كاع العوامل بأكبر أس"],sol:`${f}\n\n${w} = ${v}`,ans:""+v}}},
+ thales:{n:"طاليس",k:["طاليس","تاليس","thales"],
+  r:"إلا كان (MN) // (BC) فالمثلث ABC:\nAM/AB = AN/AC = MN/BC",
+  m:"AM=2 ، AB=6 ، AN=3:\n"+al([["AM/AB","AN/AC"],["2/6","3/AC"],["AC","3 × 6 ÷ 2"],["","9"]])},
+ ident:{n:"المتطابقات الهامة",k:["متطابق","نشر","تعميل"],
+  r:"(a+b)² = a² + 2ab + b²\n(a−b)² = a² − 2ab + b²\n(a+b)(a−b) = a² − b²",
+  m:al([["(x + 3)²","x² + 2·x·3 + 3²"],["","x² + 6x + 9"]])},
+ ineq:{n:"المتراجحات",k:["متراجح","inequation"],
+  r:"كنحلوها بحال المعادلة.\nولكن إلا ضربنا ولا قسمنا على عدد سالب كنقلبو الإشارة.",
+  m:"2x + 1 < 7\n2x < 6\nx < 3"},
+ func:{n:"الدوال الخطية والتآلفية",k:["داله","دوال","fonction"],
+  r:"دالة خطية: f(x) = ax\nدالة تآلفية: f(x) = ax + b\nباش نلقاو الصورة كنعوضو x.",
+  m:"f(x) = 3x + 1\n"+al([["f(2)","3 × 2 + 1"],["","7"]])},
+ angle:{n:"الزوايا والمثلثات",k:["زاويه","زوايا","مثلث"],
+  r:"مجموع زوايا المثلث = 180°\nالمتتامتان: مجموعهما 90°\nالمتكاملتان: مجموعهما 180°",
+  m:"مثلث زاويتاه 50° و 60°:\n"+al([["C","180° − 50° − 60°"],["","70°"]])}
+};
+/* ===== دروس الكوان (من الدفتر) — قواعد + أمثلة + تمارين، كلشي محلي بلا أي AI ===== */
+const ORDER=["pct","frac","eq","ppcm","func","pow","ident","pyth","thales","vol","area","perim","sqrt","prop","mean","ineq","angle"];
+const mk=(q,h,rows,ans)=>({q,h,sol:al(rows),ans:""+ans});
+const rd=x=>""+ +x.toFixed(2);
+const qs=(a,b,c)=>{let s=(a==1?"":a==-1?"-":a)+"x²";if(b)s+=(b<0?" − ":" + ")+(Math.abs(b)==1?"":Math.abs(b))+"x";if(c)s+=(c<0?" − ":" + ")+Math.abs(c);return s+" = 0"};
+const qsol=(a,b,c)=>{const D=b*b-4*a*c;let t=al([["Δ",`${pa(b)}² − 4 × ${pa(a)} × ${pa(c)}`],["",`${b*b} − ${pa(4*a*c)}`],["",`${D}`]]),ans=[];
+ if(D<0)t+="\nΔ < 0 إذن ما كاين حتى حل حقيقي";
+ else if(D==0){const x=fr(-b,2*a);ans=[x];t+="\nΔ = 0 إذن كاين حل واحد:\n"+al([["x",`−b/2a = ${-b}/${2*a}`],["",x]])}
+ else{const s=Math.sqrt(D);
+  if(Number.isInteger(s)){ans=[fr(-b-s,2*a),fr(-b+s,2*a)];t+="\nΔ > 0 إذن كاين جوج حلول:\n"+al([["x₁",`(${-b} − ${s})/${2*a}`],["",ans[0]],["x₂",`(${-b} + ${s})/${2*a}`],["",ans[1]]])}
+  else{ans=[rd((-b-s)/(2*a)),rd((-b+s)/(2*a))];t+=`\nΔ > 0 إذن كاين جوج حلول:\nx₁ = (${-b} − √${D})/${2*a} ≈ ${ans[0]}\nx₂ = (${-b} + √${D})/${2*a} ≈ ${ans[1]}`}}
+ return{t,ans}};
+const pct1=T.pct.ex,eq1=T.eq.ex,py1=T.pyth.ex,pow1=T.pow.ex;
+
+T.pct.r="النسبة المئوية = (الجزء × 100) ÷ الكل\nالعدد = النسبة المئوية × الكل\na% = a/100\nحيث a هو عدد النسبة، مثلا 25% معناها 25/100";
+T.pct.m="15 من 60 شحال بالمئة؟\n"+al([["p","15 × 100 ÷ 60"],["","1500 ÷ 60"],["","25%"]])+"\n\n20% من 50:\n"+al([["n","20/100 × 50"],["","10"]]);
+T.pct.ex=()=>R(0,1)?pct1():(()=>{const n=pick([20,40,80,200]),q=pick([10,20,25,50]),p=n*q/100;return mk(`${p} من ${n} شحال بالمئة؟`,["النسبة = الجزء × 100 ÷ الكل",`${p} × 100 ÷ ${n}`],[["p",`${p} × 100 ÷ ${n}`],["",`${p*100} ÷ ${n}`],["",`${q}%`]],q)})();
+
+T.frac.r="جمع الكسور:\nA/B + C/D = (A×D + C×B) / (B×D)\nطرح الكسور:\nA/B − C/D = (A×D − C×B) / (B×D)\nإلا كان نفس المقام:\nA/B + C/B = (A + C) / B\nA/B − C/B = (A − C) / B\nضرب الكسور:\nA/B × C/D = (A × C) / (B × D)\nقسمة الكسور:\nA/B ÷ C/D = A/B × D/C = (A × D) / (B × C)\n\nحيث A و C هما البسطان، و B و D هما المقامان";
+T.frac.m=al([["1/2 + 1/3","(1×3 + 1×2)/(2×3)"],["","5/6"]])+"\n\n"+al([["2/3 × 3/4","(2×3)/(3×4)"],["","6/12 = 1/2"]]);
+T.frac.ex=()=>{let a,b,c,d;const o=pick(["+","−","×","÷"]);
+ do{b=R(2,6);d=R(2,6);a=R(1,b-1);c=R(1,d-1)}while(a*d==c*b);
+ if(o=="−"&&a*d<c*b)[a,b,c,d]=[c,d,a,b];
+ const n=o=="+"?a*d+c*b:o=="−"?a*d-c*b:o=="×"?a*c:a*d,m=o=="×"?b*d:o=="÷"?b*c:b*d,s=fr(n,m),
+ f=o=="×"?`(${a}×${c})/(${b}×${d})`:o=="÷"?`${a}/${b} × ${d}/${c}`:`(${a}×${d} ${o} ${c}×${b})/(${b}×${d})`;
+ return mk(`احسب:\n${a}/${b} ${o} ${c}/${d}`,[o=="÷"?"القسمة = ضرب فمقلوب الكسر التاني":o=="×"?"كنضربو البسطين وكنضربو المقامين":"كنوحدو المقام: B × D = "+b*d,`الناتج قبل التبسيط: ${n}/${m}\nدابا بسّط الكسر`],
+  [[`${a}/${b} ${o} ${c}/${d}`,f],["",`${n}/${m}`],...(s!=`${n}/${m}`?[["",s]]:[])],s)};
+
+T.eq.r="معادلة من الدرجة 1: ax + b = c\nكنحيدو b من الجهتين وكنقسمو على a\n\nمعادلة من الدرجة 2: ax² + bx + c = 0\nΔ = b² − 4ac\nإذا كان Δ < 0: ما كاين حتى حل حقيقي\nإذا كان Δ = 0: x = −b / 2a\nإذا كان Δ > 0:\nx₁ = (−b − √Δ) / 2a\nx₂ = (−b + √Δ) / 2a\n\nحيث a و b و c هي معاملات المعادلة، و Δ هو المميز";
+T.eq.m=al([["2x + 3","11"],["2x","11 − 3"],["x","8/2 = 4"]])+"\n\nx² − 5x + 6 = 0\n"+al([["Δ","(−5)² − 4×1×6 = 1"],["x₁","(5 − 1)/2 = 2"],["x₂","(5 + 1)/2 = 3"]]);
+T.eq.ex=()=>{if(R(0,1))return eq1();const r1=R(-4,5),r2=R(-4,5),b=-(r1+r2),c=r1*r2,o=qsol(1,b,c);
+ return{q:"حل المعادلة (كتب الحلول بحال: 2 و 3):\n"+qs(1,b,c),h:["a = 1 ; b = "+b+" ; c = "+c+"\nحسب Δ = b² − 4ac","دابا طبق: x = (−b ± √Δ) / 2a"],sol:"كنحسبو Δ:\n"+o.t,ans:o.ans,all:o.ans}};
+
+T.ppcm.r="PPCM(x;y) × PGCD(x;y) = x × y\nPPCM = أصغر مضاعف مشترك\nPGCD = أكبر قاسم مشترك\nكنفككو الأعداد لجداء عوامل أولية:\nPPCM = جداء كاع العوامل بأكبر أس\nPGCD = جداء العوامل المشتركة بأصغر أس\nحيث x و y هما العددان لي بغينا نحسبو ليهم";
+
+T.func.r="f(x) = ax  ← دالة خطية\nf(x) = ax + b  ← دالة تآلفية\nباش نلقاو الصورة كنعوضو x\nحيث a هو معامل x، و b هو العدد الثابت، و x هو المتغير";
+T.func.ex=()=>{const a=R(2,6)*pick([1,-1]),b=pick([0,R(1,9),-R(1,9)]),x=R(-3,5),v=a*x+b,e=`${a} × ${pa(x)}${b?(b<0?" − ":" + ")+Math.abs(b):""}`;
+ return mk(`f(x) = ${fl(a,b)}\nاحسب f(${x})`,["كنعوضو x بـ "+x,e],[[`f(${x})`,e],["",v]],v)};
+
+T.pow.r="a^m × a^n = a^(m+n)\na^m ÷ a^n = a^(m−n)\na^m × b^m = (ab)^m\n(a^n)^m = a^(n×m)\na^(1/n) = ⁿ√a\na^(m/n) = (ⁿ√a)^m\na^(−m) = 1 / a^m\na^1 = a\na^0 = 1\n(a/b)^n = a^n / b^n\n(a/b)^(−n) = (b/a)^n\n\nحيث a و b هما الأعداد، و m و n هما الأسس (القوى)";
+T.pow.m=al([["2³ × 2⁴","2^(3+4)"],["","2⁷ = 128"]])+"\n"+al([["3^(−2)","1/3²"],["","1/9"]]);
+T.pow.ex=()=>{const t=R(0,3),a=R(2,5),m=R(2,4),n=R(1,3);
+ if(!t)return pow1();
+ if(t==1)return mk(`احسب ${a}^${m} × ${a}^${n}`,["a^m × a^n = a^(m+n)",`${a}^(${m}+${n})`],[[`${a}^${m} × ${a}^${n}`,`${a}^${m+n}`],["",a**(m+n)]],a**(m+n));
+ if(t==2)return mk(`احسب ${a}^${m+n} ÷ ${a}^${n}`,["a^m ÷ a^n = a^(m−n)",`${a}^${m}`],[[`${a}^${m+n} ÷ ${a}^${n}`,`${a}^${m}`],["",a**m]],a**m);
+ return mk(`احسب ${a}^(−${m})`,["a^(−m) = 1 / a^m",`1/${a}^${m}`],[[`${a}^(−${m})`,`1/${a}^${m}`],["",`1/${a**m}`]],`1/${a**m}`)};
+
+T.ident.r="(a+b)² = a² + 2ab + b²\n(a−b)² = a² − 2ab + b²\n(a−b)(a+b) = a² − b²\na³ + b³ = (a+b)(a² − ab + b²)\na³ − b³ = (a−b)(a² + ab + b²)\n\nحيث a و b هما أي عددين";
+T.ident.m=al([["(x + 3)²","x² + 2·x·3 + 3²"],["","x² + 6x + 9"]])+"\n"+al([["(x − 2)(x + 2)","x² − 2²"],["","x² − 4"]]);
+T.ident.ex=()=>{if(R(0,1)){const a=R(2,9)*10,d=pick([1,2,3]),s=R(0,1),n=a+(s?-d:d),g=s?"−":"+";
+  return mk(`احسب ${n}² بالمتطابقات`,[`${n} = ${a} ${g} ${d}\n(a${g}b)² = a² ${g} 2ab + b²`,`a = ${a} و b = ${d}`],[[`(${a} ${g} ${d})²`,`${a}² ${g} 2×${a}×${d} + ${d}²`],["",`${a*a} ${g} ${2*a*d} + ${d*d}`],["",n*n]],n*n)}
+ const n=R(3,12)*5;return mk(`احسب ${n-1} × ${n+1} بالمتطابقات`,["(a−b)(a+b) = a² − b²",`a = ${n} و b = 1`],[[`${n-1} × ${n+1}`,`${n}² − 1²`],["",`${n*n} − 1`],["",n*n-1]],n*n-1)};
+
+T.pyth.r="فالمثلث ABC القائم الزاوية فـ A:\nالوتر هو BC (أطول ضلع)\nBC² = AB² + AC²\nالوتر² = ضلع² + ضلع² (الضلعان الآخران)";
+T.pyth.ex=()=>R(0,1)?py1():(()=>{const[a,b,c]=pick([[3,4,5],[5,12,13],[6,8,10],[8,15,17]]);
+ return mk(`مثلث ABC قائم الزاوية فـ A، BC = ${c} و AB = ${a}. شحال هو AC؟`,["AC² = BC² − AB²",`AC² = ${c}² − ${a}²`],[["AC²",`${c}² − ${a}²`],["",`${c*c} − ${a*a}`],["",c*c-a*a],["AC",`√${b*b}`],["",b]],b)})();
+
+T.thales.r="إذا كان (MN) // (BC):\nAM/AB = AN/AC = MN/BC\nالنقطة M على [AB] و N على [AC] ، و AM/AB معناها: طول AM ÷ طول AB\nالقاعدة كتصدق حتى فالشكل ديال الفراشة (A هي نقطة تقاطع (BM) و (CN))";
+T.thales.ex=()=>{const m=R(2,5),k=R(2,4),n=R(2,6);
+ return mk(`فالمثلث ABC: (MN) // (BC)، AM = ${m} ، AB = ${m*k} ، AN = ${n}. شحال هو AC؟`,["طاليس: AM/AB = AN/AC","جداء بالتقاطع: AC = AN × AB ÷ AM"],[["AM/AB","AN/AC"],[`${m}/${m*k}`,`${n}/AC`],["AC",`${n} × ${m*k} ÷ ${m}`],["",n*k]],n*k)};
+
+const nt="\nS = مساحة القاعدة ، h = الارتفاع ، r = الشعاع";
+const vl=[
+ ()=>{const a=R(2,6);return mk(`شحال هو حجم مكعب ضلعو ${a}؟`,["V = a³",`${a} × ${a} × ${a}`],[["V",`${a}³`],["",a**3]],a**3)},
+ ()=>{const L=R(3,9),l=R(2,6),h=R(2,6);return mk(`شحال هو حجم متوازي مستطيلات: الطول ${L} ، العرض ${l} ، الارتفاع ${h}؟`,["V = L × l × h",`${L} × ${l} × ${h}`],[["V",`${L} × ${l} × ${h}`],["",L*l*h]],L*l*h)},
+ ()=>{const S=R(3,12),h=R(2,9);return mk(`موشور قائم مساحة قاعدتو ${S} وارتفاعو ${h}. شحال حجمو؟`,["V = S × h",`${S} × ${h}`],[["V",`${S} × ${h}`],["",S*h]],S*h)},
+ ()=>{const S=R(2,8)*3,h=R(2,9);return mk(`هرم مساحة قاعدتو ${S} وارتفاعو ${h}. شحال حجمو؟`,["V = 1/3 × S × h",`1/3 × ${S} × ${h}`],[["V",`1/3 × ${S} × ${h}`],["",`${S*h} ÷ 3`],["",S*h/3]],S*h/3)},
+ ()=>{const r=R(1,5),h=R(2,8),v=rd(3.14*r*r*h);return mk(`أسطوانة شعاعها ${r} وارتفاعها ${h}. شحال حجمها؟ (π ≈ 3.14)`,["V = π × r² × h",`3.14 × ${r}² × ${h}`],[["V","π × r² × h"],["",`3.14 × ${r*r} × ${h}`],["",v]],v)},
+ ()=>{const r=R(1,5),h=3*R(1,3),v=rd(3.14*r*r*h/3);return mk(`مخروط شعاعو ${r} وارتفاعو ${h}. شحال حجمو؟ (π ≈ 3.14)`,["V = 1/3 × π × r² × h",`1/3 × 3.14 × ${r}² × ${h}`],[["V","1/3 × π × r² × h"],["",`1/3 × 3.14 × ${r*r} × ${h}`],["",v]],v)},
+ ()=>{const r=pick([3,6]),v=rd(4/3*3.14*r**3);return mk(`كرة شعاعها ${r}. شحال حجمها؟ (π ≈ 3.14)`,["V = 4/3 × π × r³",`4/3 × 3.14 × ${r}³`],[["V","4/3 × π × r³"],["",`4/3 × 3.14 × ${r**3}`],["",v]],v)}];
+T.vol={n:"الحجم",k:["حجم","volume"],r:"المكعب:\nV = a³\nالضلع × الضلع × الضلع\n\nمتوازي المستطيلات:\nV = L × l × h\nالطول × العرض × الارتفاع\n\nالأسطوانة:\nV = π × r² × h\nπ × الشعاع × الشعاع × الارتفاع\n\nالموشور القائم:\nV = S × h\nمساحة القاعدة × الارتفاع\n\nالمخروط:\nV = 1/3 × π × r² × h\n1/3 × π × الشعاع × الشعاع × الارتفاع\n\nالهرم:\nV = 1/3 × S × h\n1/3 × مساحة القاعدة × الارتفاع\n\nالكرة:\nV = 4/3 × π × r³\n4/3 × π × الشعاع × الشعاع × الشعاع",
+ m:"مكعب ضلعو 3:\n"+al([["V","3³"],["","27"]])+"\n\nأسطوانة r = 2 و h = 5 (π ≈ 3.14):\n"+al([["V","π × r² × h"],["","3.14 × 4 × 5"],["","62.8"]]),ex:()=>pick(vl)()};
+
+const ar=[
+ ()=>{const a=R(2,12);return mk(`شحال هي مساحة مربع ضلعو ${a}؟`,["S = a²",`${a} × ${a}`],[["S",`${a}²`],["",a*a]],a*a)},
+ ()=>{const L=R(3,12),l=R(2,9);return mk(`شحال هي مساحة مستطيل طولو ${L} وعرضو ${l}؟`,["S = L × l",`${L} × ${l}`],[["S",`${L} × ${l}`],["",L*l]],L*l)},
+ ()=>{const b=R(2,10)*2,h=R(2,9);return mk(`شحال هي مساحة مثلث قاعدتو ${b} وارتفاعو ${h}؟`,["S = b × h ÷ 2",`${b} × ${h} ÷ 2`],[["S",`${b} × ${h} ÷ 2`],["",`${b*h} ÷ 2`],["",b*h/2]],b*h/2)},
+ ()=>{const D=R(2,8)*2,d=R(2,9);return mk(`شحال هي مساحة معين قطراه ${D} و ${d}؟`,["S = D × d ÷ 2",`${D} × ${d} ÷ 2`],[["S",`${D} × ${d} ÷ 2`],["",`${D*d} ÷ 2`],["",D*d/2]],D*d/2)},
+ ()=>{const b=R(3,12),h=R(2,9);return mk(`شحال هي مساحة متوازي أضلاع قاعدتو ${b} وارتفاعو ${h}؟`,["S = b × h",`${b} × ${h}`],[["S",`${b} × ${h}`],["",b*h]],b*h)},
+ ()=>{const b=R(2,6),B=b+R(1,6),h=R(1,5)*2;return mk(`شحال هي مساحة شبه منحرف: القاعدة الكبرى ${B} ، الصغرى ${b} ، الارتفاع ${h}؟`,["S = (B + b) × h ÷ 2",`(${B} + ${b}) × ${h} ÷ 2`],[["S",`(${B} + ${b}) × ${h} ÷ 2`],["",`${B+b} × ${h} ÷ 2`],["",(B+b)*h/2]],(B+b)*h/2)},
+ ()=>{const r=R(1,8),v=rd(3.14*r*r);return mk(`شحال هي مساحة قرص شعاعو ${r}؟ (π ≈ 3.14)`,["S = r² × π",`${r}² × 3.14`],[["S",`${r}² × 3.14`],["",`${r*r} × 3.14`],["",v]],v)}];
+T.area={n:"المساحة",k:["مساحه","aire"],r:"المربع:\nS = a²\nالضلع × الضلع\n\nالمستطيل:\nS = L × l\nالطول × العرض\n\nالمثلث:\nS = b × h ÷ 2\nالقاعدة × الارتفاع ÷ 2\n\nالمعين:\nS = D × d ÷ 2\nالقطر الكبير × القطر الصغير ÷ 2\n\nمتوازي الأضلاع:\nS = b × h\nالقاعدة × الارتفاع\n\nشبه المنحرف:\nS = (B + b) × h ÷ 2\n(القاعدة الكبرى + القاعدة الصغرى) × الارتفاع ÷ 2\n\nالقرص:\nS = r² × π\nالشعاع × الشعاع × π",
+ m:"مستطيل 5 و 3:\n"+al([["S","5 × 3"],["","15"]])+"\n\nمثلث b = 6 و h = 4:\n"+al([["S","6 × 4 ÷ 2"],["","12"]]),ex:()=>pick(ar)()};
+
+const pm=[
+ ()=>{const a=R(2,12);return mk(`شحال هو محيط مربع ضلعو ${a}؟`,["P = 4a",`4 × ${a}`],[["P",`4 × ${a}`],["",4*a]],4*a)},
+ ()=>{const L=R(3,12),l=R(2,9);return mk(`شحال هو محيط مستطيل طولو ${L} وعرضو ${l}؟`,["P = (L + l) × 2",`(${L} + ${l}) × 2`],[["P",`(${L} + ${l}) × 2`],["",`${L+l} × 2`],["",(L+l)*2]],(L+l)*2)},
+ ()=>{const a=R(3,9),b=R(3,9),c=R(3,9);return mk(`شحال هو محيط مثلث أضلاعو ${a} و ${b} و ${c}؟`,["P = a + b + c",`${a} + ${b} + ${c}`],[["P",`${a} + ${b} + ${c}`],["",a+b+c]],a+b+c)},
+ ()=>{const a=R(2,12);return mk(`شحال هو محيط معين ضلعو ${a}؟`,["P = 4a",`4 × ${a}`],[["P",`4 × ${a}`],["",4*a]],4*a)},
+ ()=>{const a=R(3,12),b=R(2,9);return mk(`شحال هو محيط متوازي أضلاع ضلعاه ${a} و ${b}؟`,["P = (a + b) × 2",`(${a} + ${b}) × 2`],[["P",`(${a} + ${b}) × 2`],["",`${a+b} × 2`],["",(a+b)*2]],(a+b)*2)},
+ ()=>{const a=R(3,9),b=R(3,9),c=R(3,9),d=R(3,9);return mk(`شحال هو محيط شبه منحرف أضلاعو ${a} و ${b} و ${c} و ${d}؟`,["P = a + b + c + d",`${a} + ${b} + ${c} + ${d}`],[["P",`${a} + ${b} + ${c} + ${d}`],["",a+b+c+d]],a+b+c+d)},
+ ()=>{const r=R(1,10),v=rd(2*3.14*r);return mk(`شحال هو محيط دائرة شعاعها ${r}؟ (π ≈ 3.14)`,["P = 2πr",`2 × 3.14 × ${r}`],[["P",`2 × 3.14 × ${r}`],["",v]],v)}];
+T.perim={n:"المحيط",k:["محيط","perimetre"],r:"المربع:\nP = 4a\n4 × الضلع\n\nالمستطيل:\nP = (L + l) × 2\n(الطول + العرض) × 2\n\nالمثلث:\nP = a + b + c\nمجموع أطوال أضلاعه\n\nالمعين:\nP = 4a\n4 × الضلع\n\nمتوازي الأضلاع:\nP = (a + b) × 2\n(الضلع الأول + الضلع التاني) × 2\n\nشبه المنحرف:\nP = a + b + c + d\nمجموع أطوال أضلاعه\n\nالدائرة:\nP = 2πr\n2 × π × الشعاع",
+ m:"مستطيل 5 و 3:\n"+al([["P","(5 + 3) × 2"],["","16"]])+"\n\nدائرة r = 2 (π ≈ 3.14):\n"+al([["P","2 × 3.14 × 2"],["","12.56"]]),ex:()=>pick(pm)()};
+
+T.ineq.ex=()=>{const a=R(2,5),x=R(1,8),b=R(1,9),c=a*x+b;return{q:`حل: ${a}x + ${b} < ${c}\n(كتب العدد لي x كتكون أصغر منو)`,h:[`حيد ${b} من الجهتين`,`${a}x < ${c-b}`],sol:`${a}x + ${b} < ${c}\n${a}x < ${c-b}\nx < ${x}`,ans:""+x}};
+T.angle.ex=()=>{const A=R(30,80),B=R(30,80);return mk(`مثلث زاويتاه ${A}° و ${B}°. شحال هي الزاوية التالتة؟`,["مجموع زوايا المثلث = 180°",`180° − ${A}° − ${B}°`],[["C",`180° − ${A}° − ${B}°`],["",`${180-A-B}°`]],180-A-B)};
+
+const OFF="أنا روبوت متخصص بالرياضيات و لا أجيب على أي سؤال خارج تخصصي";
+const lev=(a,b)=>{const d=[...Array(b.length+1).keys()];for(let i=1;i<=a.length;i++){let p=d[0];d[0]=i;for(let j=1;j<=b.length;j++){const x=d[j];d[j]=Math.min(d[j]+1,d[j-1]+1,p+(a[i-1]==b[j-1]?0:1));p=x}}return d[b.length]};
+const words=t=>t.split(/[\s،,.؟?!:;()]+/).map(w=>w.replace(/^(وال|بال|لل|ال)/,"")).filter(Boolean);
+const hit=(w,k)=>w==k||(k.length==3&&w.startsWith(k))||(k.length>3&&(w.includes(k)||lev(w,k)<=(k.length>6?2:1)));
+const findTopic=t=>/%/.test(t)?"pct":Object.keys(T).find(c=>words(t).some(w=>T[c].k.some(k=>hit(w,k))));
+const NAMES=()=>Object.values(T).map(c=>c.n).join("، ");
+const HINT=/تلميح|عاون|ساعد|مساعده|hint/,DK=/عرفت?ش|عرفنا?ش|كنعرفش|(لم|لا)\s*اعرف/,NOT=/(^|\s)(ما|م)\s*فهمت|فهمتش|مفهمت|(لم|لا)\s*افهم/,ASKEX=/تمرين|تمارين|exercise|تدريب/,
+ YES=/^(اه|ايه|نعم|واخا|اوكي|ok|okay|فهمت|زوين|مزيان)\s*[.!]*$/,NO=/^(لا|non)\s*[.!]*$/;
+const solveNum=(t,topic)=>{
+ const nums=(t.match(/\d+/g)||[]).map(Number);
+ if(/ppcm|pgcd/.test(t)&&nums.length>=2&&nums.length<=3&&nums.every(n=>n>0)){
+  const F=nums.map(fz),ps=[...new Set(F.flatMap(f=>f.map(x=>x[0])))].sort((a,b)=>a-b),ee=(f,q)=>(f.find(x=>x[0]==q)||[0,0])[1];
+  const pf=g=>ps.map(q=>[q,g(F.map(f=>ee(f,q)))]).filter(x=>x[1]>0).map(([q,e])=>q+(e>1?sup(e):"")).join(" × ")||"1";
+  const G=nums.reduce((a,b)=>gcd(a,b)),L=nums.reduce((a,b)=>lcm(a,b));
+  let o="كنفككو الأعداد لعوامل أولية:\n"+al(nums.map(n=>[""+n,fzs(n)||"1"]));
+  if(/pgcd/.test(t))o+="\n\nPGCD (العوامل المشتركة بأصغر أس):\n"+pf(a=>Math.min(...a))+" = "+G;
+  if(/ppcm/.test(t))o+="\n\nPPCM (كاع العوامل بأكبر أس):\n"+pf(a=>Math.max(...a))+" = "+L;
+  return o}
+ let m=t.match(/(\d+)\s*\/\s*(\d+)\s*([+\-−×x*÷:])\s*(\d+)\s*\/\s*(\d+)/);
+ if(m){let[,a,b,o,c,d]=m;a=+a;b=+b;c=+c;d=+d;if(!b||!d||(/[÷:]/.test(o)&&!c))return null;
+  o=o=="-"?"−":o=="x"||o=="*"?"×":o==":"?"÷":o;
+  const n=o=="+"?a*d+c*b:o=="−"?a*d-c*b:o=="×"?a*c:a*d,mm=o=="×"?b*d:o=="÷"?b*c:b*d,s=fr(n,mm),
+  f=o=="×"?`(${a}×${c})/(${b}×${d})`:o=="÷"?`${a}/${b} × ${d}/${c}`:`(${a}×${d} ${o} ${c}×${b})/(${b}×${d})`;
+  return al([[`${a}/${b} ${o} ${c}/${d}`,f],["",`${n}/${mm}`],...(s!=`${n}/${mm}`?[["",s]]:[])])}
+ m=t.match(/(\d+(?:\.\d+)?)\s*%\s*(?:من|de|of)\s*(\d+(?:\.\d+)?)/);
+ if(m){const p=+m[1],n=+m[2];return al([[`${p}% × ${n}`,`${n} × ${p} ÷ 100`],["",`${rd(n*p)} ÷ 100`],["",rd(n*p/100)]])}
+ m=t.match(/(\d+(?:\.\d+)?)\s*من\s*(\d+(?:\.\d+)?).*(?:%|مئو|مئه|نسبه)/);
+ if(m&&+m[2]>0){const a=+m[1],n=+m[2];return al([["p",`${a} × 100 ÷ ${n}`],["",`${rd(a*100)} ÷ ${n}`],["",rd(a*100/n)+"%"]])}
+ if(topic=="pyth"&&nums.length==2){const[a,b]=nums,s=a*a+b*b,c=Math.sqrt(s);return "إلا كان "+a+" و "+b+" هما ضلعا الزاوية القائمة:\n"+al([["c²",`${a}² + ${b}²`],["",`${a*a} + ${b*b}`],["",s],["c",Number.isInteger(c)?c:`√${s} ≈ ${rd(c)}`]])}
+ return null};
+function brain(raw,S){
+ const t=N(raw).replace(/[ڭگ]/g,"ك").replace(/(.)\1{2,}/g,"$1").trim(),ex=S.ex,out=(emotion,text)=>({emotion,text,state:S});
+ const topic=findTopic(t);
+ if(/^(ال)?دروس$/.test(t)||/(وريني|عطيني|بغيت|شوف|كاع|اريد|اعرض|اظهر|اعطني).*دروس/.test(t))return{emotion:"happy",text:"",view:"list",state:S};
+ if(S.lastEx&&/(?:عاود|اعد|اعاده|كرر).*تمرين|تمرين.*(?:عاود|اعد|اعاده|كرر)|اخر تمرين|نفس التمرين|التمرين الاخير/.test(t)){S.ex=S.lastEx;S.hint=0;return out("happy","التمرين:\n"+S.lastEx.q)}
+ const newEx=k=>{let e,i=0;do e=T[k].ex();while(e.q==S.last&&++i<20);S.last=e.q;S.lastEx=e;S.ex=e;S.hint=0;S.topic=k;return e.q};
+ const lesson=k=>{const c=T[k];S.topic=k;return out("happy","📘 القاعدة:\n"+c.r+"\n\nمثال:\n"+c.m+(c.ex?"\n\nتمرين باش تفهم:\n"+newEx(k):""))};
+ const exo=k=>T[k].ex?out("happy","تمرين:\n"+newEx(k)):out("think","ما عنديش تمارين فهاد الدرس دابا. هاك الدرس:\n"+T[k].r+"\n\nمثال:\n"+T[k].m);
+ const what=k=>{S.topic=k;const e=T[k].ex?T[k].ex():null;return out("happy","😕 ما تقلقش، غادي نشرحها ليك بالأمثلة:\n\nمثال 1:\n"+T[k].m+(e?"\n\nمثال 2:\n"+e.q+"\n"+e.sol+"\n\nدابا جرب نتا هاد التمرين:\n"+newEx(k):""))};
+ if(S.ask){const a=S.ask;S.ask=null;
+  if(a.t=="what"){
+   if(/^1(\D|$)|قاعد/.test(t))return out("happy","📘 القاعدة:\n"+T[a.k].r+"\n\nإلا بقا شي حاجة ما فهمتيهاش قولها ليا.");
+   if(/^2(\D|$)|مثال/.test(t))return out("happy","مثال:\n"+T[a.k].m+"\n\nإلا بقا شي حاجة ما فهمتيهاش قولها ليا.");
+   if(/^3(\D|$)|تمرين|حل/.test(t))return exo(a.k)}
+  if(a.t=="deg"){
+   if(/^1(\D|$)|اولي/.test(t))return out("happy","واخا. كتب ليا المعادلة لي بغيتي نحلو، بحال: 2x + 3 = 11. ولا كتب «تمرين».");
+   if(/^2(\D|$)|ثاني|تاني/.test(t))return out("think","معادلات الدرجة الثانية خارج مستوى التاسعة. كتب ليا معادلة من الدرجة الأولى ولا كتب «تمرين».")}}
+ if(ex&&DK.test(t)){S.ex=null;return out("happy","الجواب:\n"+ex.sol)}
+ if(ex&&(HINT.test(t)||(!topic&&NOT.test(t)))){S.hint++;return S.hint<=ex.h.length?out("think","💡 تلميح "+S.hint+":\n"+ex.h[S.hint-1]):out("think","ما بقاش عندي تلميح آخر. إلا ما عرفتيش كتب «معرفتش» وغادي نعطيك الجواب.")}
+ const eqm=t.match(/[-+\d.,x*×()\s]*x[-+\d.,x*×()\s]*=[-+\d.,x*×()\s]+|[-+\d.,x*×()\s]+=[-+\d.,x*×()\s]*x[-+\d.,x*×()\s]*/);
+ const xa=t.match(/^\s*x\s*=\s*(-?[\d.,\/\s]+)$/);
+ if(ex&&(!topic||/^[\s\d.,\/%-]+$/.test(t))&&(xa||!/=/.test(t))&&!/\d\s*[+*×÷^]\s*\d/.test(t)){
+  const ns=(xa?xa[1]:t).match(/-?\d+\s*\/\s*\d+|-?\d+(?:[.,]\d+)?/g);
+  if(ns){const a=norm(ns[ns.length-1]);
+   if(ex.all?ex.all.every(v=>ns.some(z=>norm(z)==v)):[].concat(ex.ans).includes(a)){const k=S.topic;return out("happy","✅ صحيح!\n"+ex.sol+"\n\nتمرين جديد:\n"+newEx(k))}
+   return out("think","❌ ماشي هاد الجواب. عاود حاول، ولا كتب «تلميح».")}}
+ if(/x\s*(²|\^\s*2)/.test(t)&&/=/.test(t)){
+  const sd=t.replace(/\s/g,"").replace(/[×*]/g,"").replace(/²/g,"^2").replace(/,/g,".").split("=");
+  let a=0,b=0,c=0;(sd[0].match(/[+-]?\d*\.?\d*x\^2|[+-]?\d*\.?\d*x|[+-]?\d+\.?\d*/g)||[]).forEach(k=>{const m=k.match(/^([+-]?\d*\.?\d*)x(\^2)?$/);if(m){const v=m[1]==""||m[1]=="+"?1:m[1]=="-"?-1:+m[1];m[2]?a+=v:b+=v}else c+=+k});
+  const rh=sd[1]===""?0:+sd[1];
+  if(sd.length!=2||isNaN(rh)||a==0||!Number.isInteger(a)||!Number.isInteger(b)||!Number.isInteger(c-rh))return out("think","كتب المعادلة من الدرجة 2 بحال: x² − 5x + 6 = 0 (بأعداد صحيحة)");
+  c-=rh;return out("happy","📘 "+qs(a,b,c)+"\na = "+a+" ; b = "+b+" ; c = "+c+"\n"+qsol(a,b,c).t)}
+ if(eqm&&!xa){
+  const e=eqm[0].trim().replace(/×/g,"*");
+  if(/[()]/.test(e))return out("think","كتب المعادلة بلا أقواس، بحال: 2x + 3 = 11");
+  const sd=e.split("=");
+  if(sd.length!=2)return out("think","ما فهمتش المعادلة. كتبها بحال: 2x + 3 = 11");
+  const [l,r]=sd.map(lin),A=l[0]-r[0],B=r[1]-l[1];
+  if(A==0)return out("think",B==0?"هاد المعادلة صحيحة مهما كانت x.":"هاد المعادلة ما عندها حتى حل.");
+  const v=B/A,dec=""+ +v.toFixed(4),ans=Number.isInteger(A)&&Number.isInteger(B)?[fr(B,A)].concat(Number.isInteger(v)?[]:[dec]):[dec];
+  const AX=fl(A,0),rows=[[fl(l[0],l[1]),fl(r[0],r[1])]];
+  if(r[0]!=0||l[1]!=0){const L2=fl(l[0],0)+(r[0]!=0?(r[0]<0?" + ":" − ")+(Math.abs(r[0])==1?"":Math.abs(r[0]))+"x":""),R2=l[1]!=0?`${pa(r[1])} − ${pa(l[1])}`:`${r[1]}`;rows.push([L2,R2])}
+  const z=rows[rows.length-1];if(z[0]!=AX||z[1]!=""+B)rows.push([AX,""+B]);
+  const all=rows.concat(A==1?[]:[["x",`${B}/${A}`],["x",ans[0]]]);
+  const e2={q:e,h:["كنجمعو حدود x فجهة والأعداد فجهة:\n"+al(rows),A==1?"دابا x بوحدها، شوف الجهة الأخرى":"دابا كنقسمو على "+A+":\n"+al(all)],sol:"كنجمعو حدود x فجهة والأعداد فجهة، من بعد كنقسمو:\n"+al(all),ans};
+  if(/خدم|حل|وري|احسب|solve/.test(t)){S.ex=null;return out("happy",e2.sol)}
+  S.ex=e2;S.hint=1;S.topic="eq";
+  return out("think","💡 تلميح 1:\n"+e2.h[0])}
+ {const sv=solveNum(t,topic);if(sv)return out("happy","✅ الجواب:\n"+sv+(topic&&T[topic]?"\n\n📘 القاعدة:\n"+T[topic].r+"\n\nمثال:\n"+T[topic].m:""))}
+ if(YES.test(t))return out("happy",ex?"زوين! دابا كتب الجواب ديالك 👍":"👍");
+ if(NO.test(t))return out(ex?"think":"happy",ex?"ما تقلقش، كتب «تلميح» وغادي نعاونك.":"واخا");
+ if(topic){
+  S.topic=topic;
+  if(NOT.test(t))return what(topic);
+  if(ASKEX.test(t))return exo(topic);
+  return lesson(topic)}
+ if(ASKEX.test(t))return S.topic?exo(S.topic):out("think","فأي درس بغيتي التمرين؟ كتب اسمو: "+NAMES());
+ if(NOT.test(t))return S.topic?what(S.topic):out("think","شنو ما فهمتيش؟ كتب ليا اسم الدرس: "+NAMES());
+ const m=t.match(/\d[\d.\s]*([+\-*\/×÷^]\s*\(?[\d.]+\)?\s*)+/);
+ if(m){try{const e=m[0].replace(/×/g,"*").replace(/÷/g,"/").replace(/\^/g,"**"),r=Function('"use strict";return ('+e+')')();
+  if(isFinite(r))return out("happy",m[0].trim()+" = "+(+r.toFixed(4)))}catch(_){}}
+ if(/شرح|درس|رياضيات|حساب|فهمني|علمني|وريني/.test(t))return out("think","على أي درس؟ كتب اسمو: "+NAMES());
+ const p=[];
+ if(/^(وعليكم السلام|السلام|سلام|salam|slm|مرحبا|اهلا|هلا|hi|hello)(\s|$)/.test(t))p.push("وعليكم السلام");
+ if(/كيداير|كي دايرين|لاباس|labas/.test(t))p.push("لاباس الحمد لله");
+ if(/شكرا|merci|thanks/.test(t))p.push("العفو");
+ if(p.length)return out("happy",p.join("، ")+" 😊");
+ if(ex)return out("think","كتب الجواب ديال التمرين بالأرقام، ولا كتب «تلميح»:\n"+ex.q);
+ const MATHY=/\d|[+\-*\/×÷^=%√]|رياضيات|حساب|درس|دروس|تمرين|تمارين|معادل|كسر|كسور|نسب|مئوي|هندس|مثلث|دائر|مربع|مستطيل|زاوي|مساح|محيط|حجم|دال|جذر|قوه|قوي|اس |متوسط|متراجح|تناسب|فيثاغور|طاليس|مجهول|عدد|ضرب|قسم|جمع|طرح|شرح|فهمني|علمني/;
+ if(MATHY.test(t))return out("think","ما فهمتش مزيان. كتب ليا اسم الدرس باش نشرحو ليك: "+NAMES());
+ return out("sad",OFF);
+}
+
+const FU=[
+["العدد الموجب لي","العدد الموجب الذي"],
+["باش نجمعو كسرين:","لجمع كسرين:"],["باش نحلو معادلة بحال","لحلّ معادلة مثل"],["باش نلقاو الصورة كنعوضو x","لإيجاد الصورة نعوّض x"],["باش تفهم","لتفهم"],
+["كنفككو الأعداد لجداء عوامل أولية","نحلّل الأعداد إلى جداء عوامل أولية"],["كنفككو الأعداد لعوامل أولية","نحلّل الأعداد إلى عوامل أولية"],["فكك العددين لعوامل أولية","حلّل العددين إلى عوامل أولية"],
+["هما العددان لي بغينا نحسبو ليهم","هما العددان المطلوب التعامل معهما"],["كاع العوامل","جميع العوامل"],
+["القسمة = ضرب فمقلوب الكسر التاني","القسمة = الضرب في مقلوب الكسر الثاني"],["الكسر التاني","الكسر الثاني"],["الضلع التاني","الضلع الثاني"],["الزاوية التالتة","الزاوية الثالثة"],
+["كنضربو البسطين وكنضربو المقامين","نضرب البسطين ونضرب المقامين"],["كنوحدو المقام","نوحّد المقام"],["وكنجمعو البسطين","ونجمع البسطين"],["كنجمعو البسطين","نجمع البسطين"],
+["كنجمعو حدود x فجهة والأعداد فجهة","نجمع حدود x في طرف والأعداد في طرف"],["من بعد كنقسمو","ثم نقسم"],
+["كنحيدو الرقم الحر من الجهتين","نطرح الحد الثابت من الطرفين"],["كنحيدو","نطرح"],["من الجهتين","من الطرفين"],
+["وكنقسمو","ونقسم"],["كنقسمو","نقسم"],["كنضربو","نضرب"],["كنحولو","نحوّل"],["كنطبقو","نطبّق"],["كنحسبو","نحسب"],["كنعوضو","نعوّض"],["كنحلوها","نحلّها"],["كنقلبو","نقلب"],["كنستعملو","نستعمل"],["كنحلو","نحلّ"],
+["ولكن إلا ضربنا ولا قسمنا","ولكن إذا ضربنا أو قسمنا"],["إلا كانو عددين متناسبين","إذا كان عددان متناسبين"],["إلا كان نفس المقام","إذا كان للكسرين نفس المقام"],["إلا كان","إذا كان"],
+["ما كاين حتى حل حقيقي","لا يوجد أي حل حقيقي"],["كاين حل واحد","يوجد حل واحد"],["كاين جوج حلول","يوجد حلّان"],["ما عندها حتى حل","لا تملك أي حل"],["هاد المعادلة","هذه المعادلة"],
+["إلا بقا شي حاجة ما فهمتيهاش قولها ليا.","إذا بقي شيء لم تفهمه فأخبرني به."],
+["ما عنديش تمارين فهاد الدرس دابا. هاك الدرس:","لا توجد لدي تمارين في هذا الدرس الآن. إليك الدرس:"],
+["ما تقلقش، كتب «تلميح» وغادي نعاونك.","لا تقلق، اكتب «تلميح» وسأساعدك."],["غادي نشرحها ليك بالأمثلة","سأشرحها لك بالأمثلة"],["ما تقلقش","لا تقلق"],
+["دابا كنقسمو","الآن نقسم"],["دابا قسم على","الآن اقسم على"],["دابا جمع البسطين","الآن اجمع البسطين"],["دابا دير الجذر المربع","الآن احسب الجذر التربيعي"],
+["دابا x بوحدها، شوف الجهة الأخرى","الآن x وحدها، انظر إلى الطرف الآخر"],["دابا بسّط الكسر","الآن بسّط الكسر"],["دابا طبق:","الآن طبّق:"],["دابا ضرب فـ","الآن اضرب في"],
+["دابا جرب نتا هاد التمرين","الآن جرّب هذا التمرين"],["زوين! دابا كتب الجواب ديالك","ممتاز! اكتب إجابتك الآن"],["دابا كتب الجواب ديالك","الآن اكتب إجابتك"],["دابا","الآن"],
+["قلب على عدد إلا ضربتو فراسو كيعطي","ابحث عن عدد إذا ضربته في نفسه أعطى"],["شحال كيساوي الكيلو الواحد؟","كم ثمن الكيلوغرام الواحد؟"],["الكيلو =","الكيلوغرام ="],
+["شحال هو","ما هو"],["شحال هي","ما هي"],["شحال حجمو","ما حجمه"],["شحال حجمها","ما حجمها"],
+["فأي درس بغيتي التمرين؟","في أي درس تريد التمرين؟"],["شنو ما فهمتيش؟","ما الذي لم تفهمه؟"],["على أي درس؟","عن أي درس؟"],["اسمو","اسمه"],
+["ما بقاش عندي تلميح آخر. إلا ما عرفتيش كتب «معرفتش» وغادي نعطيك الجواب.","لم يبق لدي تلميح آخر. إذا لم تعرف فاكتب «لا أعرف» وسأعطيك الإجابة."],
+["❌ ماشي هاد الجواب. عاود حاول، ولا كتب «تلميح».","❌ هذه ليست الإجابة الصحيحة. حاول مجددا، أو اكتب «تلميح»."],
+["كتب الجواب ديال التمرين بالأرقام، ولا كتب","اكتب إجابة التمرين بالأرقام، أو اكتب"],["ولا كتب","أو اكتب"],
+["كتب المعادلة بلا أقواس","اكتب المعادلة بدون أقواس"],["ما فهمتش المعادلة. كتبها","لم أفهم المعادلة. اكتبها"],["كتب العدد لي x كتكون أصغر منو","اكتب العدد الذي تكون x أصغر منه"],
+["لاباس الحمد لله","بخير والحمد لله"],["كتصدق حتى فالشكل ديال الفراشة","تصحّ أيضا في شكل الفراشة"],["الجواب","الإجابة"],["واخا","حسنا"],
+["فالمثلث","في المثلث"],["فالشكل","في الشكل"],["فـ ","في "],["كيساوي","يساوي"],["كيعطي","يعطي"],
+["طولو","طوله"],["عرضو","عرضه"],["ضلعو","ضلعه"],["قاعدتو","قاعدته"],["ارتفاعو","ارتفاعه"],["شعاعو","شعاعه"],["حجمو","حجمه"],["مربعو","مربعه"],["أضلاعو","أضلاعه"],["فراسو","في نفسه"],
+["ليك","لك"],["هاد ","هذا "],["هاك ","إليك "],["بحال","مثل"],["شحال","كم"]];
+const IMP={"قسم":"اقسم","جمع":"اجمع","ضرب":"اضرب","حيد":"اطرح","جرب":"جرّب","خد":"خذ","فكك":"حلّل"};
+function fusha(s){
+ s=s.replace(/(\d+(?:\.\d+)?) من (\d+(?:\.\d+)?) شحال بالمئة؟/g,"ما النسبة المئوية لـ $1 من $2؟").replace(/شحال (?=\d)/g,"كم ثمن ");
+ for(const[a,b]of FU)s=s.split(a).join(b);
+ s=s.replace(/(^|[\n:؟.]\s*)(قسم|جمع|ضرب|حيد|جرب|خد|فكك)(?=\s)(?!\s*الكسور)/g,(m,p,w)=>p+IMP[w]);
+ s=s.replace(/(\n)حسب(?= Δ)/g,"$1احسب");
+ s=s.replace(/(^|[\s(:،])كتب(?=[\s«])/g,"$1اكتب");
+ return s.replace(/(?<![\u0600-\u06FF])ليا(?![\u0600-\u06FF])/g,"لي")}
+</script>
+<script>/* =====================================================
+   2) ROBOT — الجسم: الشاشة الكبيرة (Pi) + العينين والسيرفو (Arduino).
+   فالروبوت الحقيقي كيتبدلو غير هاد الدوال: serial() كتبعت للـ Arduino.
+   ===================================================== */
+const $=id=>document.getElementById(id);
+const eyes=$("eyes"),screen=$("screen"),status=$("status"),q=$("q"),head=$("head"),ser=$("ser");
+const E="#6fe3ff",P="#ff8fb1",bl=`<circle cx="22" cy="68" r="5" fill="${P}"/><circle cx="146" cy="68" r="5" fill="${P}"/>`;
+const faces={
+ sleep:`<rect x="26" y="40" width="38" height="5" rx="2.5" fill="${E}"/><rect x="104" y="40" width="38" height="5" rx="2.5" fill="${E}"/>`,
+ awake:`<rect x="28" y="16" width="38" height="46" rx="10" fill="${E}"/><rect x="102" y="16" width="38" height="46" rx="10" fill="${E}"/>${bl}`,
+ think:`<rect x="30" y="20" width="34" height="40" rx="9" fill="${E}"><animate attributeName="x" values="30;22;38;30" dur="2.4s" repeatCount="indefinite"/></rect><rect x="104" y="20" width="34" height="40" rx="9" fill="${E}"><animate attributeName="x" values="104;96;112;104" dur="2.4s" repeatCount="indefinite"/></rect>${bl}`,
+ happy:`<path d="M28 52 Q47 22 66 52" stroke="${E}" stroke-width="9" fill="none" stroke-linecap="round"/><path d="M102 52 Q121 22 140 52" stroke="${E}" stroke-width="9" fill="none" stroke-linecap="round"/>${bl}`,
+ sad:`<path d="M28 36 L66 16 L66 62 L28 62Z" fill="${E}"/><path d="M140 36 L102 16 L102 62 L140 62Z" fill="${E}"/>`,
+ angry:`<path d="M28 14 L66 34 L66 62 L28 62Z" fill="${E}"/><path d="M140 14 L102 34 L102 62 L140 62Z" fill="${E}"/>`
+};
+const logs=[];
+function serial(c){logs.unshift(c);logs.length=Math.min(logs.length,3);ser.innerHTML="<b>Arduino ◂ Pi</b><br>"+logs.map(l=>"&gt; "+l).join("<br>")}
+function setEyes(n){eyes.innerHTML=faces[n];serial("EYES:"+n.toUpperCase())}
+function servo(a){head.style.transform=`rotate(${(a-90)/3}deg)`;serial("SERVO:"+a)}
+function waves(){
+ screen.className="screen waves";
+ const c=["#ff8fb1","#6fa8ff","#5fe0b8"];
+ screen.innerHTML=`<svg viewBox="0 0 300 200" width="100%" height="100%" preserveAspectRatio="none">`+c.map((k,i)=>{const y=55+i*45,u=`T150 ${y} T225 ${y} T300 ${y}`;return `<path fill="none" stroke="${k}" stroke-width="4" stroke-linecap="round"><animate attributeName="d" dur="${3+i}s" repeatCount="indefinite" values="M0 ${y} Q40 ${y-30} 75 ${y} ${u};M0 ${y} Q40 ${y+30} 75 ${y} ${u};M0 ${y} Q40 ${y-30} 75 ${y} ${u}"/></path>`}).join("")+`</svg>`;
+}
+const esc=x=>x.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+function write(t){t=fusha(t);screen.className="screen";
+ screen.innerHTML=t.split("\n").map(l=>{
+  if(!l.trim())return '<div class="gap"></div>';
+  if(!/[\u0600-\u06FF]/.test(l))return '<div class="mx">'+esc(l)+'</div>';
+  return '<div>'+esc(l.replace(/[A-Za-zΔπ0-9√(][^\u0600-\u06FF\n]*[A-Za-zΔπ0-9)%°²³ⁿ₁₂]/g,m=>"\u0001"+m+"\u0002")).replace(/\u0001/g,'<bdi dir="ltr">').replace(/\u0002/g,'</bdi>')+'</div>'}).join("");
+ screen.scrollTop=0}
+
+/* =====================================================
+   3) الحلقة الرئيسية
+   ===================================================== */
+let brain,T,ORDER,fusha,BRAIN_URL="",apiUrl="";
+let S={ex:null,hint:0,topic:null},awake=false,idleT=null,busy=false;
+/* 🔑🔑🔑 هنا مكان المفتاح — بدّلو إلا بغيتي */
+const DEFAULT_KEY="AQ.Ab8RN6KFiXfWUCdk-1dIFQlqh9_wL5RSjtkncvVjs-2UwdQHwg";
+const DEFAULT_MODEL="gemini-3.5-flash-lite"; // الأسرع
+let gKey=DEFAULT_KEY,gModel=DEFAULT_MODEL,gHist=[];
+try{gKey=localStorage.getItem("mr_gkey")||gKey;gModel=localStorage.getItem("mr_gmodel3")||gModel}catch(e){}
+const SYS=`أنت روبوت معلّم متخصص فقط في الرياضيات (حسب المنهاج المغربي المدرَّس بالفرنسية). مهمتك الوحيدة هي مساعدة التلميذ في الرياضيات: معادلات، حساب، هندسة، كسور، نسب...
+قواعد صارمة:
+1) إذا كان السؤال خارج الرياضيات (فلك، علوم، تاريخ، ترفيه، برمجة...) لا تجاوب عليه أبدا، وقل بلطف بجملة قصيرة أنك متخصص فقط في الرياضيات واقترح تمرينا أو درسا في الرياضيات. emotion تكون think.
+2) المصطلحات الرياضية بالفرنسية كما يدرسها التلميذ: المتغيرات بحروف لاتينية x و y (ممنوع س و ص)، واستعمل مصطلحات مثل équation و fraction عند الحاجة، والشرح بالدارجة المغربية أو العربية حسب لغة التلميذ.
+3) كل معادلة أو خطوة حساب تُكتب في سطر مستقل وحدها بدون أي كلمة عربية في نفس السطر، وكل سطر يفصله \n، مثال لحل المعادلة:
+x + 3 = 6
+x = 6 - 3
+x = 3
+4) إذا طلب التلميذ معادلة، أعطه معادلة واحدة بسيطة بحرف x فقط (مثل x + 3 = 7) ودعه يحلها، ولا تحلها له.
+5) لا تستعمل LaTeX ولا علامة $ أبدا؛ استعمل رموزا عادية مثل × ÷ ² √ و 1/2.
+6) لا تعطِ الجواب النهائي مباشرة في التمارين، بل ساعد خطوة خطوة.
+7) الجواب قصير: جملتان إلى أربع جمل بالإضافة إلى أسطر الحساب.
+أرجع JSON فقط بالشكل {"emotion":"happy|think|sad|angry","text":"..."}.`;
+const SUP={"0":"⁰","1":"¹","2":"²","3":"³","4":"⁴","5":"⁵","6":"⁶","7":"⁷","8":"⁸","9":"⁹","-":"⁻"};
+function cleanMath(t){
+ t=String(t||"");
+ for(let i=0;i<3;i++)t=t.replace(/\\[dt]?frac\s*\{([^{}]*)\}\s*\{([^{}]*)\}/g,"($1)/($2)");
+ t=t.replace(/\\sqrt\s*\{([^{}]*)\}/g,"√($1)").replace(/\\sqrt\s*(\w+)/g,"√$1")
+  .replace(/\\(times|cdot)/g,"×").replace(/\\div/g,"÷").replace(/\\pm/g,"±")
+  .replace(/\\leq?/g,"≤").replace(/\\geq?/g,"≥").replace(/\\neq/g,"≠").replace(/\\approx/g,"≈")
+  .replace(/\\(left|right)/g,"").replace(/\\text\s*\{([^{}]*)\}/g,"$1").replace(/\\[,;! ]/g," ")
+  .replace(/\^\{?(-?\d+)\}?/g,(m,d)=>[...d].map(c=>SUP[c]||c).join(""))
+  .replace(/\$+/g,"").replace(/[{}]/g,"");
+ return t}
+async function askGemini(msg){
+ gHist.push({role:"user",parts:[{text:msg}]});
+ const models=[gModel,"gemini-flash-latest","gemini-3.5-flash-lite"].filter((m,i,a)=>a.indexOf(m)===i);
+ let j=null,lastErr="";
+ for(const m of models){
+  for(let t=0;t<1;t++){
+   let res,d;
+   try{
+    const ac=new AbortController(),to=setTimeout(()=>ac.abort(),9000);
+    const gc={responseMimeType:"application/json",maxOutputTokens:500};
+    res=await fetch("https://generativelanguage.googleapis.com/v1beta/models/"+encodeURIComponent(m)+":generateContent",{
+     signal:ac.signal,method:"POST",headers:{"Content-Type":"application/json","x-goog-api-key":gKey},
+     body:JSON.stringify({systemInstruction:{parts:[{text:SYS}]},contents:gHist.slice(-12),generationConfig:gc})});
+    clearTimeout(to);d=await res.json();
+   }catch(e){lastErr=e.message;continue}
+   if(res.ok){j=d;break}
+   lastErr=(d.error&&d.error.message)||("HTTP "+res.status);
+   if(![404,429,500,503].includes(res.status)){gHist.pop();throw new Error(lastErr)}
+   
+  }
+  if(j)break;
+ }
+ if(!j){gHist.pop();throw new Error(lastErr||"فشل الاتصال")}
+ const raw=(j.candidates&&j.candidates[0]&&j.candidates[0].content.parts.map(x=>x.text||"").join(""))||"";
+ let o;try{o=JSON.parse(raw.replace(/```json|```/g,"").trim())}catch(e){o={emotion:"happy",text:raw||"..."}}
+ if(!["happy","think","sad","angry"].includes(o.emotion))o.emotion="happy";
+ o.text=cleanMath(o.text);
+ gHist.push({role:"model",parts:[{text:o.text}]});
+ return o}
+function sleep(){awake=false;setEyes("sleep");servo(90);waves();status.textContent="نائم...";}
+function bump(){clearTimeout(idleT);idleT=setTimeout(sleep,300000)}
+function wake(){if(!awake){awake=true;setEyes("awake");status.textContent="مستيقظ"}bump()}
+async function ask(msg){
+ msg=(msg||"").trim();if(!msg||busy)return;busy=true;q.value="";
+ wake();setEyes("think");servo(60);setTimeout(()=>servo(120),500);status.textContent="يفكر...";
+ let r;
+ if(gKey){try{r=await askGemini(msg)}catch(e){r={emotion:"sad",text:"⚠️ خطأ Gemini: "+e.message}}}
+ else if(apiUrl){try{r=await(await fetch(apiUrl,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({text:msg,state:S})})).json();if(r.state)S=r.state}catch(e){r={emotion:"sad",text:"تعذّر الاتصال بالمخ."}}}
+ else{await new Promise(f=>setTimeout(f,900));r=brain(msg,S)}
+ servo(90);status.textContent="";if(r.view=="list"){lessonsList();busy=false;bump();return}setEyes(r.emotion);write(r.text);
+ setTimeout(()=>{if(awake&&r.emotion!=="think")setEyes("awake")},4000);
+ busy=false;bump();
+}
+function lessonsList(){wake();S.ex=null;S.topic=null;setEyes("happy");screen.className="screen";
+ screen.innerHTML='<div>📚 الدروس — اضغط على الدرس لترى القواعد:</div>'+ORDER.map((k,i)=>`<button class="it" data-k="${k}">${i+1}) ${T[k].n}</button>`).join("");
+ screen.querySelectorAll(".it").forEach(b=>b.onclick=()=>pointLesson(b.dataset.k));screen.scrollTop=0}
+function pointLesson(k){wake();S.topic=k;S.ex=null;servo(65);setTimeout(()=>servo(90),450);setEyes("happy");
+ write("📘 "+T[k].n+" — القواعد:\n\n"+T[k].r);
+ screen.insertAdjacentHTML("beforeend",'<button class="it" id="nu">😕 لم أفهم هذا الدرس</button><button class="it" id="bk">↩ العودة إلى الدروس</button>');
+ $("nu").onclick=()=>ask("لم افهم");$("bk").onclick=lessonsList;bump()}
+$("stage").onclick=()=>{wake();q.focus()};
+$("go").onclick=()=>ask(q.value);
+q.addEventListener("keydown",e=>{if(e.key==="Enter")ask(q.value)});
+[["تمرين","تمرين"],["تلميح","تلميح"],["لا أعرف","لا اعرف"],["لم أفهم","لم افهم"]].forEach(([a,b,p])=>{const x=document.createElement("button");x.className=p?"":"alt";x.textContent=a;x.onclick=()=>ask(b);$("chips").appendChild(x)});
+setEyes("sleep");waves();servo(90);
+
+/* ===== لوحة الكود: عرض الكود + تعديله وتحديث الروبوت ===== */
+const ORIG=document.getElementById("brainCode").textContent,codeKey="mr_code",apiKey="mr_api";
+let code=ORIG;
+function runSrc(src){
+ const tail="\n;return {brain:brain,T:T,ORDER:ORDER,fusha:fusha,U:typeof BRAIN_URL==='undefined'?'':BRAIN_URL}";
+ try{return new Function(src+tail)()}
+ catch(e){
+  if(!(e instanceof EvalError)&&!/unsafe-eval|Content Security/i.test(e.message))throw e;
+  let err=null;window.__BR=null;const h=ev=>{err=ev.message+" (السطر "+(ev.lineno-1)+")";ev.preventDefault()};
+  addEventListener("error",h);const el=document.createElement("script");
+  el.textContent="(function(){\n"+src+"\n;window.__BR={brain:brain,T:T,ORDER:ORDER,fusha:fusha,U:typeof BRAIN_URL==='undefined'?'':BRAIN_URL}})();";
+  document.head.appendChild(el);el.remove();removeEventListener("error",h);
+  if(err||!window.__BR)throw new Error(err||"تعذّر تشغيل الكود");return window.__BR}}
+function applyBrain(src){
+ const r=runSrc(src),pb=[brain,T,ORDER,fusha,BRAIN_URL];
+ [brain,T,ORDER,fusha,BRAIN_URL]=[r.brain,r.T,r.ORDER,r.fusha,r.U];
+ try{brain("سلام",{ex:null,hint:0,topic:null});for(const k of ORDER){T[k].r;T[k].m;if(T[k].ex)T[k].ex()}}
+ catch(e){[brain,T,ORDER,fusha,BRAIN_URL]=pb;throw e}}
+const ta=$("code"),dmsg=$("devmsg"),au=$("apiurl"),prev=$("codeprev"),gk=$("gkey"),gm=$("gmodel");
+function setMsg(t,ok){dmsg.textContent=t;dmsg.style.color=ok?"#2e9e5b":"#d64545"}
+function loadSaved(){let sc="",sa="";try{sc=localStorage.getItem(codeKey)||"";sa=localStorage.getItem(apiKey)||""}catch(e){}
+ try{applyBrain(sc||ORIG);code=sc||ORIG}catch(e){applyBrain(ORIG);code=ORIG}
+ apiUrl=sa||BRAIN_URL||"";au.value=apiUrl;prev.textContent=code}
+function saveCode(){try{const nc=ta.value;applyBrain(nc);code=nc;apiUrl=au.value.trim()||BRAIN_URL||"";S={ex:null,hint:0,topic:null};gKey=gk.value.trim();gModel=gm.value.trim()||DEFAULT_MODEL;gHist=[];try{localStorage.setItem("mr_gkey",gKey);localStorage.setItem("mr_gmodel3",gModel)}catch(e){}
+ try{localStorage.setItem(codeKey,nc);localStorage.setItem(apiKey,au.value.trim())}catch(e){}
+ prev.textContent=code;setMsg("✅ تم تحديث الروبوت"+(gKey?" — Gemini مفعّل":apiUrl?" — الربط مع الـ API مفعّل":""),1);setEyes("happy")}
+ catch(e){setMsg("❌ خطأ في الكود: "+e.message+" — لم يتغير الروبوت",0)}}
+$("devbtn").onclick=()=>{ta.value=code;au.value=apiUrl;gk.value=gKey;gm.value=gModel;setMsg("",1);$("dev").classList.add("on")};
+$("devx").onclick=()=>$("dev").classList.remove("on");
+$("devsave").onclick=saveCode;
+$("devreset").onclick=()=>{ta.value=ORIG;au.value="";saveCode();try{localStorage.removeItem(codeKey)}catch(e){}};
+loadSaved();
+</script>
+</body>
+</html>
